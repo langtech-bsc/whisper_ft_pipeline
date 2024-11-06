@@ -1,2 +1,1 @@
-# whisper_ft_pipeline
-Finetuning whisper pipeline
+# Whisper_pipeline
