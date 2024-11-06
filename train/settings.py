@@ -12,7 +12,7 @@ TRAIN_DEFAULT_SETTINGS = {
     
     # Model settings
     #MODEL PATH 
-    "whisper_model": "/gpfs/projects/bsc88/speech/research/models/hf_models/whisper-tiny",
+    "whisper_model": "/gpfs/projects/bsc88/speech/research/models/hf_models/whisper-large-v3",
     "resume_checkpoint": None,
     "load_checkpoint": False,
     "language": "Spanish",
