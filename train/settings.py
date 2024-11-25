@@ -1,13 +1,14 @@
 TRAIN_DEFAULT_SETTINGS = {
     # Dataset settings
     #PATH TO THE LOADER FILE
-    "hf_dataset": "/gpfs/projects/bsc88/speech/research/scripts/Lucas/SoftPrompts/loading_script.py", 
+    "hf_dataset": "/gpfs/projects/bsc88/speech/research/scripts/Lucas/SoftPrompts/loading_script.py",
+    #"/gpfs/projects/bsc88/speech/research/scripts/Lucas/SoftPrompts/loading_script.py", 
     #PATH OF THE DATA LOADER CACHE
-    "cache_dir": "/gpfs/projects/bsc88/speech/data/cache/spanish_dataloader_cache/whisper_tiny",
+    "cache_dir": "/gpfs/projects/bsc88/speech/research/scripts/Lucas/Whisper_pipeline/cache",
     #HF DATA CACHE
-    "hf_dataset_cache": "/gpfs/projects/bsc88/speech/data/cache/spanish_dataloader_cache/whisper_tiny",
+    "hf_dataset_cache": "/gpfs/projects/bsc88/speech/research/scripts/Lucas/Whisper_pipeline/cache",
     #HF MODEL CACHE
-    "hf_home": "/gpfs/projects/bsc88/speech/ASR/models/whisper_tiny",
+    "hf_home": "/gpfs/projects/bsc88/speech/research/scripts/Lucas/Whisper_pipeline/cache/model_cache",
     
     
     # Model settings
@@ -15,20 +16,20 @@ TRAIN_DEFAULT_SETTINGS = {
     "whisper_model": "/gpfs/projects/bsc88/speech/research/models/hf_models/whisper-large-v3",
     "resume_checkpoint": None,
     "load_checkpoint": False,
-    "language": "Spanish",
+    "language": "Catalan",
     "task": "transcribe",
-    "checkpoint_dir": "checkpoints",
+    "checkpoint_dir": "checkpoints_full_cat",
     
     # Training hyperparameters
     "per_device_train_batch_size": 8,
     "per_device_eval_batch_size": 8,
     "num_epochs": 2,
     "gradient_accumulation_steps": 1,
-    "warmup_steps": 7,
+    "warmup_steps": 1000,
     
     # Secondary parameters
-    "preprocessing_num_workers": 8,
-    "num_workers": 8,
+    "preprocessing_num_workers": 16,
+    "num_workers": 16,
     "pin_memory": True,
     "learning_rate": 1e-5,
     "weight_decay": 1e-4,

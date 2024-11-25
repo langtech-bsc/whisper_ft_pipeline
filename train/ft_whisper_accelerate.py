@@ -22,7 +22,7 @@ from transformers import (
 )
 from transformers.models.whisper.english_normalizer import BasicTextNormalizer
 import datasets
-from datasets import load_dataset, DatasetDict, Audio
+from datasets import load_dataset, DatasetDict, Audio, load_from_disk
 from torch.utils.data import DataLoader
 
 from arg_parser import ArgsParser
@@ -142,7 +142,9 @@ def main():
     
 
     # Initialize accelerator
-    accelerator_kwargs = {"gradient_accumulation_steps": args.gradient_accumulation_steps}
+    accelerator_kwargs = {"gradient_accumulation_steps": args.gradient_accumulation_steps, 
+    "mixed_precision": "fp16"
+    }
     if args.with_tracking:
         accelerator_kwargs["log_with"] = "all"
         accelerator_kwargs["project_dir"] = args.checkpoint_dir
@@ -188,47 +190,60 @@ def main():
     )
     normalizer = BasicTextNormalizer()
 
-    # Prepare dataset processing functions
-    prepare_dataset = prepare_dataset_wrapper(
-        args.do_lower_case,
-        args.do_remove_punctuation,
-        processor,
-        normalizer
-    )
-    data_collator = DataCollatorSpeechSeq2SeqWithPadding(processor=processor)
-
-    # Load datasets
-    raw_datasets = DatasetDict()
-    raw_datasets["train"] = load_dataset(
-        args.hf_dataset,
-        split="train",
-        cache_dir=args.cache_dir,
-        trust_remote_code=True
-    )
-    raw_datasets["test"] = load_dataset(
-        args.hf_dataset,
-        split="test",
-        cache_dir=args.cache_dir,
-        trust_remote_code=True
-    )
-
-    # Process datasets
-    raw_datasets = raw_datasets.cast_column("audio", Audio(sampling_rate=16000))
-    raw_datasets = raw_datasets.rename_column("normalized_text", "sentence")
+    # Check if processed dataset exists
+    processed_dataset_path = os.path.join(args.cache_dir, "processed_dataset")
     
-    vectorized_datasets = raw_datasets.map(
-        prepare_dataset,
-        remove_columns=["audio_id", "absolute_path"],
-        num_proc=args.preprocessing_num_workers
-    ).with_format("torch")
+    if os.path.exists(processed_dataset_path) and not args.reprocess_data:
+        logger.info("Loading preprocessed dataset from disk...")
+        vectorized_datasets = load_from_disk(processed_dataset_path)
+        logger.info("Succesfully loaded preprocessed dataset from disk...")
+    else:
+        logger.info("Processing dataset from scratch...")
+        # Your existing dataset processing code
+        raw_datasets = DatasetDict()
+        raw_datasets["train"] = load_dataset(
+            args.hf_dataset,
+            split="train",
+            cache_dir=args.cache_dir,
+            trust_remote_code=True
+        )
+        raw_datasets["test"] = load_dataset(
+            args.hf_dataset,
+            split="test",
+            cache_dir=args.cache_dir,
+            trust_remote_code=True
+        )
 
-    # Filter by audio length
-    is_audio_in_length_range = get_audio_length_processor(args.max_input_length)
-    vectorized_datasets["train"] = vectorized_datasets["train"].filter(
-        is_audio_in_length_range,
-        input_columns=["input_length"],
-    )
+        raw_datasets = raw_datasets.cast_column("audio", Audio(sampling_rate=16000))
+        raw_datasets = raw_datasets.rename_column("normalized_text", "sentence")
+        
+        prepare_dataset = prepare_dataset_wrapper(
+            args.do_lower_case,
+            args.do_remove_punctuation,
+            processor,
+            normalizer
+        )
+        
+        vectorized_datasets = raw_datasets.map(
+            prepare_dataset,
+            remove_columns=["audio_id", "absolute_path"],
+            num_proc=args.preprocessing_num_workers
+        ).with_format("torch")
 
+        # Filter by audio length
+        is_audio_in_length_range = get_audio_length_processor(args.max_input_length)
+        vectorized_datasets["train"] = vectorized_datasets["train"].filter(
+            is_audio_in_length_range,
+            input_columns=["input_length"],
+        )
+        
+        # Save processed dataset
+        logger.info(f"saving processed dataset to {processed_dataset_path}")
+        vectorized_datasets.save_to_disk(processed_dataset_path)
+        
+    # Create dataloaders
+    data_collator = DataCollatorSpeechSeq2SeqWithPadding(processor=processor)
+    
     # Create dataloaders
     train_dataloader = DataLoader(
         vectorized_datasets["train"],
@@ -354,9 +369,13 @@ def main():
             unwrapped_model = accelerator.unwrap_model(model)
             unwrapped_model.save_pretrained(
                 os.path.join(args.checkpoint_dir, f"checkpoint-{epoch}"),
-                is_main_process=accelerator.is_main_process
+                is_main_process=accelerator.is_main_process,
+                safe_serialization=True
             )
             processor.tokenizer.save_pretrained(
+                os.path.join(args.checkpoint_dir, f"checkpoint-{epoch}")
+            )
+            processor.feature_extractor.save_pretrained(
                 os.path.join(args.checkpoint_dir, f"checkpoint-{epoch}")
             )
 

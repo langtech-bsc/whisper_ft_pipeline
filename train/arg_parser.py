@@ -211,6 +211,12 @@ class ArgsParser:
             default=TRAIN_DEFAULT_SETTINGS["hf_home"],
             help="hf_home"
         )
+        self.parser.add_argument(
+            "--reprocess_data",
+            action="store_true",
+            help="Force reprocessing of dataset instead of using cache"
+        )
+        
 
     def main(self):
         self.add_parser_args()

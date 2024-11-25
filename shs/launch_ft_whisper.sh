@@ -1,19 +1,19 @@
 #!/bin/bash
-#SBATCH --job-name=whisper_ft_es_test_tiny
+#SBATCH --job-name=whisper_ft_es_fullcat
 #SBATCH -D .
 #SBATCH --output=logs/%x_%j.out
 #   ------   SBATCH --error=logs/%x_%j.err
-#SBATCH --nodes=25
-#SBATCH --ntasks=25
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=40
-#SBATCH --time=01:00:00
-#SBATCH --gres=gpu:4
+#SBATCH --cpus-per-task=100
+#SBATCH --time=48:00:00
+#SBATCH --gres=gpu:0
 #SBATCH --account bsc88
 ##SBATCH --exclusive
 ##SBATCH --qos acc_debug
-##SBATCH -q gp_bscls                    # QoS for life sciences in nodes with GPUs (acc_bscls)
-#SBATCH -q acc_bscls  
+#SBATCH -q gp_bscls                    # QoS for life sciences in nodes with GPUs (acc_bscls)
+##SBATCH -q acc_bscls  
 
 
 ######################
@@ -40,13 +40,24 @@ head_node_ip=$(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1)
 
 echo $head_node_ip
 
+export GPUS_PER_NODE=4
+export MASTER_PORT=29500
+export MASTER_ADDR=$(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1)
+export WORLD_SIZE=$(($SLURM_NNODES * $GPUS_PER_NODE))
+export SRUN_CPUS_PER_TASK=${SLURM_CPUS_PER_TASK}
+
+echo "Master node: $MASTER_ADDR"
+echo "World size: $WORLD_SIZE"
+echo "SLURM nodes: $SLURM_NNODES"
+echo "GPUs per node: $GPUS_PER_NODE"
+
 echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 ######################
 
+export NCCL_IB_TIMEOUT=150
+export NCCL_SOCKET_TIMEOUT=150
 
-
-
-time srun accelerate launch --mixed_precision fp16 train/ft_whisper_accelerate.py
+srun accelerate launch train/ft_whisper_accelerate.py
 
 date
 ######################
