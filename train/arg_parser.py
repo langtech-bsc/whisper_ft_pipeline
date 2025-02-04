@@ -13,18 +13,20 @@ class ArgsParser:
     def add_parser_args(self):
         # Dataset arguments
         self.parser.add_argument(
-            "--hf_dataset",
+            "--preprocessed_data_cache",
             type=str,
-            default=TRAIN_DEFAULT_SETTINGS["hf_dataset"],
-            help="Path to the HuggingFace dataset loading script"
-        )
-        self.parser.add_argument(
-            "--cache_dir",
-            type=str,
-            default=TRAIN_DEFAULT_SETTINGS["cache_dir"],
             help="Cache directory for the dataset"
         )
-
+        self.parser.add_argument(
+            "--hf_dataset_cache",
+            type=str,
+            help="Cache directory for the hf dataset"
+        )
+        self.parser.add_argument(
+            "--hf_dataset",
+            type=str,
+            help="Path of hf dataloader"
+        )
         # Model arguments
         self.parser.add_argument(
             "--whisper_model",
@@ -77,22 +79,16 @@ class ArgsParser:
             help="Evaluation batch size per device"
         )
         self.parser.add_argument(
-            "--num_epochs",
+            "--num_train_epochs",
             type=int,
-            default=TRAIN_DEFAULT_SETTINGS["num_epochs"],
+            default=TRAIN_DEFAULT_SETTINGS["num_train_epochs"],
             help="Number of training epochs"
         )
+
         self.parser.add_argument(
-            "--gradient_accumulation_steps",
-            type=int,
-            default=TRAIN_DEFAULT_SETTINGS["gradient_accumulation_steps"],
-            help="Number of gradient accumulation steps"
-        )
-        self.parser.add_argument(
-            "--warmup_steps",
-            type=int,
-            default=TRAIN_DEFAULT_SETTINGS["warmup_steps"],
-            help="Number of warmup steps"
+            "--report_to",
+            type=str,
+            help="report_to"
         )
 
         # Secondary parameters
@@ -101,12 +97,6 @@ class ArgsParser:
             type=int,
             default=TRAIN_DEFAULT_SETTINGS["preprocessing_num_workers"],
             help="Number of preprocessing workers"
-        )
-        self.parser.add_argument(
-            "--num_workers",
-            type=int,
-            default=TRAIN_DEFAULT_SETTINGS["num_workers"],
-            help="Number of data loading workers"
         )
         self.parser.add_argument(
             "--learning_rate",
@@ -120,20 +110,9 @@ class ArgsParser:
             default=TRAIN_DEFAULT_SETTINGS["weight_decay"],
             help="Weight decay"
         )
-        self.parser.add_argument(
-            "--lr_scheduler_type",
-            type=str,
-            default=TRAIN_DEFAULT_SETTINGS["lr_scheduler_type"],
-            help="Type of learning rate scheduler"
-        )
 
         # Data processing settings
-        self.parser.add_argument(
-            "--max_input_length",
-            type=float,
-            default=TRAIN_DEFAULT_SETTINGS["max_input_length"],
-            help="Maximum input length in seconds"
-        )
+
         self.parser.add_argument(
             "--do_lower_case",
             action="store_true",
@@ -151,13 +130,12 @@ class ArgsParser:
         self.parser.add_argument(
             "--load_best_model",
             action="store_true",
-            default=TRAIN_DEFAULT_SETTINGS["load_best_model"],
             help="Load the best model after training"
         )
+
         self.parser.add_argument(
             "--with_tracking",
             action="store_true",
-            default=TRAIN_DEFAULT_SETTINGS["with_tracking"],
             help="Enable training tracking"
         )
 
@@ -168,53 +146,23 @@ class ArgsParser:
             default=TRAIN_DEFAULT_SETTINGS["use_weights_and_biases"],
             help="Whether to use Weights & Biases for logging"
         )
+
         self.parser.add_argument(
-            "--wandb_project",
+            "--logging_dir",
             type=str,
-            default=TRAIN_DEFAULT_SETTINGS["wandb_project"],
-            help="Weights & Biases project name"
-        )
-        self.parser.add_argument(
-            "--wandb_entity",
-            type=str,
-            default=TRAIN_DEFAULT_SETTINGS["wandb_entity"],
-            help="Weights & Biases entity name"
-        )
-        self.parser.add_argument(
-            "--wandb_run_name",
-            type=str,
-            default=TRAIN_DEFAULT_SETTINGS["wandb_run_name"],
-            help="Weights & Biases run name"
-        )
-        self.parser.add_argument(
-            "--offline_mode",
-            action="store_true",
-            default=TRAIN_DEFAULT_SETTINGS["offline_mode"],
-            help="Server offline_mode"
-        )
-        self.parser.add_argument(
-            "--wandb_mode",
-            type=str,
-            default=TRAIN_DEFAULT_SETTINGS["wandb_mode"],
-            choices=["online", "offline"],
-            help="Weights & Biases mode (online/offline)"
-        )
-        self.parser.add_argument(
-            "--hf_dataset_cache",
-            type=str,
-            default=TRAIN_DEFAULT_SETTINGS["hf_dataset_cache"],
-            help="hf_dataset_cache"
-        )
-        self.parser.add_argument(
-            "--hf_home",
-            type=str,
-            default=TRAIN_DEFAULT_SETTINGS["hf_home"],
-            help="hf_home"
+            default=TRAIN_DEFAULT_SETTINGS["logging_dir"],
+            help="Logging dir"
         )
         self.parser.add_argument(
             "--reprocess_data",
             action="store_true",
             help="Force reprocessing of dataset instead of using cache"
+        )
+        self.parser.add_argument(
+            "--deepspeed",
+            type=str,
+            default=TRAIN_DEFAULT_SETTINGS["deepspeed"],
+            help="Path to the HuggingFace dataset loading script"
         )
         
 
