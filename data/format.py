@@ -47,7 +47,7 @@ def transform_tsv(input_file, output_file):
 
 # Usage
 input_file = 'dev.tsv'
-output_file = 'lt400dev.tsv'
+output_file = 'dev_out.tsv'
 transform_tsv(input_file, output_file)
 
-print("Transformation complete. Output saved to lt400train.tsv")
+print("Transformation complete.")
