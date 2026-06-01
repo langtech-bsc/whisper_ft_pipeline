@@ -26,9 +26,9 @@ _HOMEPAGE = "https://huggingface.co/carlosdanielhernandezmena"
 _LICENSE = "CC-BY-4.0, See https://creativecommons.org/licenses/by/4.0/"
 
 _BASE_DATA_DIR = "data/"
-_METADATA_TRAIN = _BASE_DATA_DIR + "lot9_train.tsv"
-_METADATA_TEST = _BASE_DATA_DIR + "lot9_test.tsv"
-_METADATA_DEV = _BASE_DATA_DIR + "lot9_dev.tsv"
+_METADATA_TRAIN = _BASE_DATA_DIR + "train.tsv"
+_METADATA_TEST = _BASE_DATA_DIR + "test.tsv"
+_METADATA_DEV = _BASE_DATA_DIR + "dev.tsv"
 
 class DummyCorpusAsrEsConfig(datasets.BuilderConfig):
     """BuilderConfig for Loading Script."""
