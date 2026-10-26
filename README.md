@@ -103,3 +103,7 @@ Progress can be monitored through:
 ## Checkpoints
 
 Checkpoints are saved after each epoch in the specified checkpoint directory with the format:
+
+## Funding
+
+This work was supported by the Generalitat de Catalunya ([Aina project](https://projecteaina.cat/en/)). Reference: SDD001/22/000005. Project(s): PN040300.
